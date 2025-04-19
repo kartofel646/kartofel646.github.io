@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Волейбольный турнир - Олимпийская система (10 команд)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #e74c3c;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tournament-grid {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            margin: 0 15px;
+            min-width: 250px;
+        }
+        .round-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #e74c3c;
+            font-size: 18px;
+        }
+        .match {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+            position: relative;
+        }
+        .match-form {
+            display: flex;
+            flex-direction: column;
+        }
+        .team-row {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .team-name {
+            flex-grow: 1;
+            padding: 5px;
+        }
+        .score-input {
+            width: 40px;
+            padding: 5px;
+            margin: 0 5px;
+            text-align: center;
+        }
+        .winner {
+            background-color: #d4edda;
+            font-weight: bold;
+        }
+        .connector {
+            position: absolute;
+            right: -15px;
+            width: 15px;
+            height: 2px;
+            background-color: #999;
+            top: 50%;
+        }
+        .connector::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -8px;
+            width: 2px;
+            height: 18px;
+            background-color: #999;
+        }
+        .info-box {
+            background-color: #e7f1ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0056b3;
+        }
+        .submit-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            align-self: flex-end;
+        }
+        .submit-btn:hover {
+            background-color: #c0392b;
+        }
+        .team-input {
+            flex-grow: 1;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .setup-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .tournament-grid {
+                flex-direction: column;
+            }
+            .round {
+                margin: 10px 0;
+            }
+            .connector {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Волейбольный турнир по олимпийской системе</h1>
+        
+        <div class="info-box">
+            <h3>О турнире</h3>
+            <p>Турнир проводится по олимпийской системе (на выбывание) с участием 10 команд. 
+               В первом раунде 6 команд играют квалификационные матчи, 4 команды получают автоматический проход во второй раунд.</p>
+        </div>
+
+        <div class="setup-form">
+            <h2>Настройка турнира</h2>
+            <form id="tournamentSetup">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <div>
+                        <h3>Команды</h3>
+                        <div id="teamsContainer">
+                            <!-- Команды будут добавляться здесь -->
+                        </div>
+                        <button type="button" id="addTeamBtn" style="margin-top: 10px;">Добавить команду</button>
+                    </div>
+                    <div>
+                        <h3>Настройки</h3>
+                        <div style="margin-bottom: 10px;">
+                            <label>Дата начала турнира:</label>
+                            <input type="date" style="width: 100%; padding: 5px;">
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label>Максимальное количество сетов:</label>
+                            <select style="width: 100%; padding: 5px;">
+                                <option value="3">3 сета (до 2 побед)</option>
+                                <option value="5" selected>5 сетов (до 3 побед)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" style="margin-top: 20px; padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px;">Создать турнир</button>
+            </form>
+        </div>
+
+        <div class="tournament-grid" id="tournamentGrid">
+            <!-- Первый раунд (квалификация) -->
+            <div class="round">
+                <div class="round-title">Квалификация</div>
+                
+                <!-- Матч 1 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Команда 1</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 2</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 2 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Команда 3</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 4</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 3 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Команда 5</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 6</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+            </div>
+            
+            <!-- Второй раунд (1/4 финала) -->
+            <div class="round">
+                <div class="round-title">1/4 финала</div>
+                
+                <!-- Матч 4 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 1</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 7</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 5 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 2</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 8</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 6 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 3</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Команда 9</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 7 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Команда 10</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Лучший проигравший</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+            </div>
+            
+            <!-- Полуфиналы -->
+            <div class="round">
+                <div class="round-title">Полуфиналы</div>
+                
+                <!-- Матч 8 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 4</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Победитель матча 5</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+                
+                <!-- Матч 9 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 6</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Победитель матча 7</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                    <div class="connector"></div>
+                </div>
+            </div>
+            
+            <!-- Финал -->
+            <div class="round">
+                <div class="round-title">Финал</div>
+                
+                <!-- Матч 10 -->
+                <div class="match">
+                    <div class="match-form">
+                        <div class="team-row">
+                            <span class="team-name">Победитель матча 8</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span>:</span>
+                            <input type="number" class="score-input" min="0" value="0">
+                            <span class="team-name">Победитель матча 9</span>
+                        </div>
+                        <button class="submit-btn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Добавление команд в форму настройки
+        document.getElementById('addTeamBtn').addEventListener('click', function() {
+            const container = document.getElementById('teamsContainer');
+            const teamCount = container.children.length + 1;
+            
+            if (teamCount > 10) {
+                alert('Максимальное количество команд - 10');
+                return;
+            }
+            
+            const div = document.createElement('div');
+            div.style.marginBottom = '5px';
+            div.innerHTML = `
+                <input type="text" class="team-input" placeholder="Название команды ${teamCount}" value="Команда ${teamCount}">
+            `;
+            container.appendChild(div);
+        });
+        
+        // Инициализация 10 команд по умолчанию
+        for (let i = 0; i < 10; i++) {
+            document.getElementById('addTeamBtn').click();
+        }
+        
+        // Обработка сохранения результатов матча
+        document.querySelectorAll('.submit-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('.match-form');
+                const inputs = form.querySelectorAll('.score-input');
+                const scores = Array.from(inputs).map(input => parseInt(input.value));
+                
+                // Определяем победителя (просто для примера)
+                const teamRows = form.querySelectorAll('.team-row .team-name');
+                if (scores[0] > scores[1]) {
+                    teamRows[0].classList.add('winner');
+                    teamRows[1].classList.remove('winner');
+                } else if (scores[0] < scores[1]) {
+                    teamRows[1].classList.add('winner');
+                    teamRows[0].classList.remove('winner');
+                } else {
+                    teamRows[0].classList.remove('winner');
+                    teamRows[1].classList.remove('winner');
+                }
+                
+                alert('Результаты матча сохранены');
+            });
+        });
+        
+        // Обработка формы настройки турнира
+        document.getElementById('tournamentSetup').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Турнир успешно создан!');
+            // Здесь можно добавить логику обновления сетки с новыми названиями команд
+        });
+    </script>
+</body>
+</html>
